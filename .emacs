@@ -35,9 +35,6 @@
 (add-hook 'before-save-hook
 	  'delete-trailing-whitespace)
 
-;; Accept "y" for yes and "n" for no
-(defalias 'yes-or-no-p 'y-or-no-p)
-
 ;; sets better defaults
 (use-package better-defaults)
 
@@ -62,10 +59,10 @@
       )
 
 ;; Set smooth 1 line scrolling
-(setq mouse-wheel-scroll-amount '(1 ((shift) . 1))) ;; one line at a time
-(setq mouse-wheel-progressive-speed nil) ;; don't accelerate scrolling
-(setq mouse-wheel-follow-mouse 't) ;; scroll window under mouse
-(setq scroll-step 1) ;; keyboard scroll one line at a time
+;;(setq mouse-wheel-scroll-amount '(1 ((shift) . 1))) ;; one line at a time
+;;(setq mouse-wheel-progressive-speed nil) ;; don't accelerate scrolling
+;;(setq mouse-wheel-follow-mouse 't) ;; scroll window under mouse
+;;(setq scroll-step 1) ;; keyboard scroll one line at a time
 
 ;; Helm incremental narrowing search framework
 (use-package helm)
@@ -103,6 +100,31 @@
   (eval-after-load 'flycheck
     '(add-hook 'flycheck-mode-hook #'flycheck-elm-setup)))
 
+;; Anaconda mode for Python IDE
+(use-package anaconda-mode
+  :config
+  (add-hook 'python-mode-hook 'anaconda-mode))
+
+;; Anaconda backend for company
+(use-package company-anaconda
+  :config
+  (eval-after-load "company"
+    '(add-to-list 'company-backends 'company-anaconda)))
+
+;; Multi-Term for supporting multiple terminals
+(use-package multi-term)
+
+;; ERC, the Emacs IRC client
+(erc-autojoin-mode t)
+(setq erc-autojoin-channels-alist
+      '(("irc.osp.hpe.com" "#CumulOS" "#snretni")))
+(erc :server "irc.osp.hpe.com" :port 6667 :nick "ross l")
+
+(erc-track-mode t)
+(setq erc-track-exclude-types '("JOIN" "NICK" "PART" "QUIT" "MODE"
+                                "324" "329" "332" "333" "353" "477")) ;; Check channels
+(setq erc-hide-list '("JOIN" "PART" "QUIT" "NICK"))
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -114,7 +136,9 @@
  '(custom-safe-themes
    (quote
     ("04dd0236a367865e591927a3810f178e8d33c372ad5bfef48b5ce90d4b476481" default)))
- ; '(elm-format-on-save t)
+ '(erc-modules
+   (quote
+    (autojoin button completion fill irccontrols list match menu move-to-prompt netsplit networks noncommands readonly ring stamp track)))
  '(menu-bar-mode nil)
  '(package-selected-packages
    (quote
