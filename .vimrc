@@ -27,13 +27,6 @@ call vundle#begin()
 " Let Vundle manage Vungle, required
 Plugin 'VundleVim/Vundle.vim'
 
-" YouCompleteMe autocomplete for many languages
-Plugin 'Valloric/YouCompleteMe'
-let g:ycm_server_python_interpreter = '/usr/bin/python'
-
-" Jellybeans.vim: Colorful, dark color scheme
-Plugin 'nanotech/jellybeans.vim'
-
 " Surround.vim: delete, change, and add surroundings in pairs
 Plugin 'tpope/vim-surround'
 
@@ -43,10 +36,6 @@ Plugin 'scrooloose/nerdtree'
 " NERD commenter, makes commenting easy
 Plugin 'scrooloose/nerdcommenter'
 
-" Elm plugin
-Plugin 'ElmCast/elm-vim'
-let g:ycm_semantic_triggers = { 'elm' : ['.'],}
-
 " All plugins must be added before following line
 call vundle#end()
 filetype plugin indent on
@@ -55,7 +44,7 @@ filetype plugin indent on
 set backspace=indent,eol,start
 
 " Set colorscheme to jellybeans
-colorscheme jellybeans
+colorscheme pablo
 
 " Switch syntax highlighting on
 if !exists("g:syntax_on")
@@ -73,3 +62,6 @@ set hidden
 
 " Increase number of commands vim can save
 set history=100
+
+" Use system clipboard for copy paste
+set clipboard=unnamedplus

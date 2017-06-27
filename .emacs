@@ -114,16 +114,8 @@
 ;; Multi-Term for supporting multiple terminals
 (use-package multi-term)
 
-;; ERC, the Emacs IRC client
-(erc-autojoin-mode t)
-(setq erc-autojoin-channels-alist
-      '(("irc.osp.hpe.com" "#CumulOS" "#snretni")))
-(erc :server "irc.osp.hpe.com" :port 6667 :nick "ross l")
-
-(erc-track-mode t)
-(setq erc-track-exclude-types '("JOIN" "NICK" "PART" "QUIT" "MODE"
-                                "324" "329" "332" "333" "353" "477")) ;; Check channels
-(setq erc-hide-list '("JOIN" "PART" "QUIT" "NICK"))
+;; TRAMP settings for remote hosts
+(setq tramp-default-method "ssh")
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
