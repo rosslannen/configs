@@ -112,7 +112,12 @@
     '(add-to-list 'company-backends 'company-anaconda)))
 
 ;; Multi-Term for supporting multiple terminals
-(use-package multi-term)
+(use-package multi-term
+  :config
+  (evil-define-key 'normal term-raw-map
+    "p" 'term-paste)
+  (evil-define-key 'normal term-raw-map
+    "P" 'term-paste))
 
 ;; TRAMP settings for remote hosts
 (setq tramp-default-method "ssh")
