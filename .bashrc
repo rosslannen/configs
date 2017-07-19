@@ -118,3 +118,5 @@ alias ll='ls -l -A'
 set -o vi
 
 alias V='sudo Virsh'
+
+alias pep8='python3 /usr/lib/python3/dist-packages/pep8.py'

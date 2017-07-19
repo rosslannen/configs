@@ -42,7 +42,12 @@
 (use-package evil
   :config
   (progn
-    (evil-mode 1)))
+    (evil-mode 1))
+  (define-key evil-window-map (kbd "C-j") 'evil-window-down)
+  (define-key evil-window-map (kbd "C-k") 'evil-window-up)
+  (define-key evil-window-map (kbd "C-h") 'evil-window-left)
+  (define-key evil-window-map (kbd "C-l") 'evil-window-right)
+  (define-key evil-window-map (kbd "C-j") 'evil-window-next))
 
 ;; Sets line numbers
 (global-linum-mode t)
@@ -122,6 +127,28 @@
 ;; TRAMP settings for remote hosts
 (setq tramp-default-method "ssh")
 
+;; Mode line fun
+(use-package telephone-line
+  :config
+  (setq telephone-line-lhs
+        '((evil   . (telephone-line-evil-tag-segment))
+          (accent . (telephone-line-vc-segment
+                      telephone-line-erc-modified-channels-segment
+                      telephone-line-process-segment))
+          (nil    . (telephone-line-minor-mode-segment
+                      telephone-line-buffer-segment))))
+  (setq telephone-line-rhs
+        '((nil    . (telephone-line-misc-info-segment))
+          (accent . (telephone-line-major-mode-segment))
+          (evil   . (telephone-line-airline-position-segment))))
+  (setq telephone-line-subseparator-faces '())
+  (setq telephone-line-primary-left-separator 'telephone-line-cubed-right
+        telephone-line-secondary-left-separator 'telephone-line-cubed-hollow-right
+        telephone-line-primary-right-separator 'telephone-line-cubed-right
+        telephone-line-secondary-right-separator 'telephone-line-cubed-hollow-right)
+  (setq telephone-line-height 24)
+  (telephone-line-mode t))
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -132,7 +159,7 @@
  '(blink-cursor-mode nil)
  '(custom-safe-themes
    (quote
-    ("04dd0236a367865e591927a3810f178e8d33c372ad5bfef48b5ce90d4b476481" default)))
+    ("a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "98cc377af705c0f2133bb6d340bf0becd08944a588804ee655809da5d8140de6" "04dd0236a367865e591927a3810f178e8d33c372ad5bfef48b5ce90d4b476481" default)))
  '(erc-modules
    (quote
     (autojoin button completion fill irccontrols list match menu move-to-prompt netsplit networks noncommands readonly ring stamp track)))
@@ -152,7 +179,12 @@
  )
 
 
-;; Alect-black theme
-(use-package alect-themes
+;; Material theme
+(use-package material-theme
   :config
-  (load-theme 'alect-black))
+  (load-theme 'material))
+
+;; Rainbow Delimiters are pretty!
+(use-package rainbow-delimiters
+  :config
+  (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))

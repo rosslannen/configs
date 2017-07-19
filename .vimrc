@@ -36,6 +36,12 @@ Plugin 'scrooloose/nerdtree'
 " NERD commenter, makes commenting easy
 Plugin 'scrooloose/nerdcommenter'
 
+" status line plugin
+Plugin 'vim-airline/vim-airline'
+
+" Material colorscheme
+Plugin 'jdkanani/vim-material-theme'
+
 " All plugins must be added before following line
 call vundle#end()
 filetype plugin indent on
@@ -44,7 +50,12 @@ filetype plugin indent on
 set backspace=indent,eol,start
 
 " Set colorscheme to jellybeans
-colorscheme pablo
+colorscheme material-theme
+
+" other color stuff
+if $TERM == "xterm-256color"
+	set t_Co=256
+endif
 
 " Switch syntax highlighting on
 if !exists("g:syntax_on")
@@ -65,3 +76,13 @@ set history=100
 
 " Use system clipboard for copy paste
 set clipboard=unnamedplus
+
+" remap some frame switching
+:noremap <C-j> <C-w>j
+:noremap <C-k> <C-w>k
+:noremap <C-h> <C-w>h
+:noremap <C-l> <C-w>l
+:noremap <C-w> <C-w>w
+
+" set airline to always appear
+set laststatus=2
