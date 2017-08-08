@@ -199,7 +199,8 @@
 ;; Rainbow Delimiters are pretty!
 (use-package rainbow-delimiters
   :config
-  (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
+  (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
+  (add-hook 'latex-mode-hook #'rainbow-delimiters-mode))
 
 (provide '.emacs)
 ;;; .emacs end here
