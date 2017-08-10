@@ -166,7 +166,7 @@
  '(menu-bar-mode nil)
  '(package-selected-packages
    (quote
-    (company company-mode flycheck-elm flycheck use-package solarized-theme org evil)))
+    (rainbow-delimiters company company-mode flycheck-elm flycheck use-package solarized-theme org evil)))
  '(scroll-bar-mode nil)
  '(tool-bar-mode nil))
 
