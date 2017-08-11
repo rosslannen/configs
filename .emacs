@@ -161,6 +161,9 @@
 ;; Dockerfile syntax highlighting
 (use-package dockerfile-mode)
 
+;; Fsharp Mode
+(use-package fsharp-mode)
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -178,7 +181,7 @@
  '(menu-bar-mode nil)
  '(package-selected-packages
    (quote
-    (rainbow-delimiters company company-mode flycheck-elm flycheck use-package solarized-theme org evil)))
+    (fsharp-mode rainbow-delimiters company company-mode flycheck-elm flycheck use-package solarized-theme org evil)))
  '(scroll-bar-mode nil)
  '(tool-bar-mode nil))
 
