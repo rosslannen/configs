@@ -1,0 +1,16 @@
+# This is Git's per-user configuration file.
+[user]
+# Please adapt and uncomment the following lines:
+	name = Ross Lannen
+	email = ross.lannen@gmail.com
+[core]
+	autocrlf = input
+[alias]
+	s = status
+	b = branch
+	d = diff
+	dc = diff --cached
+	co = checkout
+	l = log --pretty=format:\"-- %h %ad %s\" --date=short
+[merge]
+	tool = emerge

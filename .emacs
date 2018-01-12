@@ -21,6 +21,7 @@
 (add-to-list 'package-archives '("elpy" . "http://jorgenschaefer.github.io/packages/"))
 
 
+
 ;; Install 'use-package' if necessary
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
@@ -39,8 +40,8 @@
 (prefer-coding-system 'utf-8)
 
 ;; Delete trailing whitespaces upon exiting
-(add-hook 'before-save-hook
-	  'delete-trailing-whitespace)
+;(add-hook 'before-save-hook
+;	  'delete-trailing-whitespace)
 
 ;; sets better defaults
 (use-package better-defaults)
@@ -63,7 +64,7 @@
 (use-package org)
 
 ;; Evil org mode - org evil integration and keybindings
-(use-package evil-org)
+; (use-package evil-org)
 
 ;; Splash screen
 (setq inhibit-splash-screen t
@@ -91,7 +92,7 @@
   :config
   (company-quickhelp-mode 1))
 
- ;; YASnippet
+;; YASnippet
 (use-package yasnippet
   :config
   (yas-global-mode 1))
@@ -102,8 +103,8 @@
 ;; Elm-mode
 (use-package elm-mode
   :config
-  '(elm-format-on-save t)
-  '(elm-sort-imports-on-save t))
+  (setq elm-format-on-save t)
+  (setq elm-sort-imports-on-save t))
 
 ;; Flycheck
 (use-package flycheck
@@ -117,10 +118,10 @@
     '(add-hook 'flycheck-mode-hook #'flycheck-elm-setup)))
 
 ;; Anaconda mode for Python IDE
-(use-package anaconda-mode
-  :config
-  (add-hook 'python-mode-hook 'anaconda-mode)
-  (add-hook 'python-mode-hook 'anaconda-eldoc-mode))
+;(use-package anaconda-mode
+;  :config
+;  (add-hook 'python-mode-hook 'anaconda-mode)
+;  (add-hook 'python-mode-hook 'anaconda-eldoc-mode))
 
 ;; Anaconda backend for company
 (use-package company-anaconda)
@@ -164,6 +165,32 @@
 ;; Fsharp Mode
 (use-package fsharp-mode)
 
+;; Web Mode
+(use-package web-mode)
+
+;; Clojure Mode
+(use-package clojure-mode)
+
+;; And Cider
+(use-package cider)
+
+;; Powershell Mode
+(use-package powershell)
+
+;; Markdown Mode
+(use-package markdown-mode
+  :commands (markdown-mode gfm-mode)
+  :mode (("README\\.md\\'" . gfm-mode)
+         ("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode))
+  :init (setq markdown-command "multimarkdown"))
+
+;; C# mode
+(use-package csharp-mode)
+
+;; asm mode customizations
+(setq asm-comment-char ?\#)
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -181,7 +208,7 @@
  '(menu-bar-mode nil)
  '(package-selected-packages
    (quote
-    (fsharp-mode rainbow-delimiters company company-mode flycheck-elm flycheck use-package solarized-theme org evil)))
+    (csharp-mode markdown-mode powershell cider fsharp-mode rainbow-delimiters company company-mode flycheck-elm flycheck use-package solarized-theme org evil)))
  '(scroll-bar-mode nil)
  '(tool-bar-mode nil))
 
