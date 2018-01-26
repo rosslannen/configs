@@ -85,7 +85,8 @@
   (add-hook 'after-init-hook 'global-company-mode)
   (with-eval-after-load 'company
     (add-to-list 'company-backends 'company-elm)
-    (add-to-list 'company-backends 'company-anaconda)))
+    (add-to-list 'company-backends 'company-anaconda)
+    (add-to-list 'company-backends 'company-ghci)))
 
 ;; Company Quickhelp
 (use-package company-quickhelp
@@ -99,6 +100,7 @@
 
 ;; Magit
 (use-package magit)
+(use-package gitignore-mode)
 
 ;; Elm-mode
 (use-package elm-mode
@@ -136,6 +138,28 @@
 
 ;; TRAMP settings for remote hosts
 (setq tramp-default-method "ssh")
+
+;; Irony stuff for c, c++
+(add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
+(use-package irony
+  :config
+  (add-hook 'c++-mode-hook 'irony-mode)
+  (add-hook 'c-mode-hook 'irony-mode)
+  (add-hook 'objc-mode-hook 'irony-mode)
+  (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options))
+(use-package company-irony
+  :config
+  (add-hook 'irony-mode-hook 'company-irony-setup-begin-commands)
+  (setq company-backends (delete 'company-semantic company-backends)))
+(use-package company-irony-c-headers
+  :config
+  (eval-after-load 'company
+    '(add-to-list
+      'company-backends '(company-irony-c-headers company-irony))))
+(use-package flycheck-irony
+  :config
+  (eval-after-load 'flycheck
+    '(add-hook 'flycheck-mode-hook #'flycheck-irony-setup)))
 
 ;; Mode line fun
 (use-package telephone-line
@@ -191,6 +215,10 @@
 ;; asm mode customizations
 (setq asm-comment-char ?\#)
 
+;; Haskell stuff
+(use-package haskell-mode)
+(use-package company-ghci)
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -201,7 +229,7 @@
  '(blink-cursor-mode nil)
  '(custom-safe-themes
    (quote
-    ("a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "98cc377af705c0f2133bb6d340bf0becd08944a588804ee655809da5d8140de6" "04dd0236a367865e591927a3810f178e8d33c372ad5bfef48b5ce90d4b476481" default)))
+    ("a24c5b3c12d147da6cef80938dca1223b7c7f70f2f382b26308eba014dc4833a" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "98cc377af705c0f2133bb6d340bf0becd08944a588804ee655809da5d8140de6" "04dd0236a367865e591927a3810f178e8d33c372ad5bfef48b5ce90d4b476481" default)))
  '(erc-modules
    (quote
     (autojoin button completion fill irccontrols list match menu move-to-prompt netsplit networks noncommands readonly ring stamp track)))
