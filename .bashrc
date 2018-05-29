@@ -120,3 +120,6 @@ set -o vi
 
 # originally set for a Intro to Linux assignment pattern matching to work
 export LC_COLLATE="C"
+
+# Isn't working in profile, we'll try it here
+xcape -e 'Caps_Lock=Escape;Control_L=Escape'

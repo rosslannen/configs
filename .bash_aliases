@@ -1,3 +1,5 @@
+#!\usr\bin\env bash
+
 alias ll='ls -A -l -h'
 
 alias '!psql'='psql postgresql://rlannen@flowers.mines.edu/csci403'

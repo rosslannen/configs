@@ -18,9 +18,6 @@
 (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
 (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
 (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
-(add-to-list 'package-archives '("elpy" . "http://jorgenschaefer.github.io/packages/"))
-
-
 
 ;; Install 'use-package' if necessary
 (unless (package-installed-p 'use-package)
@@ -34,101 +31,82 @@
 (setq use-package-always-ensure t)
 ;; init-use-package.el ends here
 
+;; Auto updating
+(use-package auto-package-update
+  :custom
+  (auto-package-update-delete-old-versions t)
+  (auto-package-update-hide-results t)
+  :config
+  (auto-package-update-maybe))
+
+;; Basic defaults
 ;; Set encoding to UTF-8
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (prefer-coding-system 'utf-8)
 
-;; Delete trailing whitespaces upon exiting
-;(add-hook 'before-save-hook
-;	  'delete-trailing-whitespace)
+(use-package better-defaults
+  :config
+  (global-linum-mode t)
+  :custom
+  (inhibit-splash-screen t)
+  (initial-scratch-message nil))
 
-;; sets better defaults
-(use-package better-defaults)
+(setq inhibit-splash-screen t
+      initial-scratch-message nil)
+
+;; TRAMP settings for remote hosts
+(setq tramp-default-method "ssh")
+
+;; Aggressive Indentation
+(use-package aggressive-indent
+  :config
+  (global-aggressive-indent-mode 1))
+
 
 ;; Evil mode
 (use-package evil
   :config
   (progn
     (evil-mode 1))
-  (define-key evil-window-map (kbd "C-j") 'evil-window-down)
-  (define-key evil-window-map (kbd "C-k") 'evil-window-up)
-  (define-key evil-window-map (kbd "C-h") 'evil-window-left)
-  (define-key evil-window-map (kbd "C-l") 'evil-window-right)
-  (define-key evil-window-map (kbd "C-j") 'evil-window-next))
+  (define-key evil-normal-state-map (kbd "<remap> <evil-next-line>") 'evil-next-visual-line)
+  (define-key evil-normal-state-map (kbd "<remap> <evil-previous-line>") 'evil-previous-visual-line)
+  (define-key evil-motion-state-map (kbd "<remap> <evil-next-line>") 'evil-next-visual-line)
+  (define-key evil-motion-state-map (kbd "<remap> <evil-previous-line>") 'evil-previous-visual-line))
 
-;; Sets line numbers
-(global-linum-mode t)
 
 ;; Org mode
 (use-package org)
+;; (use-package evil-org)
 
-;; Evil org mode - org evil integration and keybindings
-; (use-package evil-org)
-
-;; Splash screen
-(setq inhibit-splash-screen t
-      initial-scratch-message nil)
-
-;; Set smooth 1 line scrolling
-;;(setq mouse-wheel-scroll-amount '(1 ((shift) . 1))) ;; one line at a time
-;;(setq mouse-wheel-progressive-speed nil) ;; don't accelerate scrolling
-;;(setq mouse-wheel-follow-mouse 't) ;; scroll window under mouse
-;;(setq scroll-step 1) ;; keyboard scroll one line at a time
 
 ;; Helm incremental narrowing search framework
 (use-package helm)
 
-;; Company auto-completion
-(use-package company
-  :config
-  (add-hook 'after-init-hook 'global-company-mode)
-  (with-eval-after-load 'company
-    (add-to-list 'company-backends 'company-elm)
-    (add-to-list 'company-backends 'company-anaconda)
-    (add-to-list 'company-backends 'company-ghci)))
 
-;; Company Quickhelp
+;; Company
+(use-package company
+  :hook (after-init . global-company-mode))
+
 (use-package company-quickhelp
   :config
   (company-quickhelp-mode 1))
 
-;; YASnippet
-(use-package yasnippet
-  :config
-  (yas-global-mode 1))
-
-;; Magit
-(use-package magit)
-(use-package gitignore-mode)
-
-;; Elm-mode
-(use-package elm-mode
-  :config
-  (setq elm-format-on-save t)
-  (setq elm-sort-imports-on-save t))
 
 ;; Flycheck
 (use-package flycheck
   :init
   (global-flycheck-mode))
 
-;; Flycheck-Elm
-(use-package flycheck-elm
-  :config
-  (eval-after-load 'flycheck
-    '(add-hook 'flycheck-mode-hook #'flycheck-elm-setup)))
 
-;; Anaconda mode for Python IDE
-;(use-package anaconda-mode
-;  :config
-;  (add-hook 'python-mode-hook 'anaconda-mode)
-;  (add-hook 'python-mode-hook 'anaconda-eldoc-mode))
+;; YASnippet
+;;(use-package yasnippet
+;;  :config
+;;  (yas-global-mode 1))
 
-;; Anaconda backend for company
-(use-package company-anaconda)
 
-;; Multi-Term for supporting multiple terminals
+;; Multi-Term
+;; adds support for multiple terminals
 (use-package multi-term
   :config
   (evil-define-key 'normal term-raw-map
@@ -136,72 +114,127 @@
   (evil-define-key 'normal term-raw-map
     "P" 'term-paste))
 
-;; TRAMP settings for remote hosts
-(setq tramp-default-method "ssh")
 
-;; Irony stuff for c, c++
+;; Git
+(use-package magit)
+
+(use-package gitignore-mode)
+
+
+;; Elm
+(use-package elm-mode
+  :after (company)
+  :custom
+  (elm-format-on-save t)
+  (elm-sort-imports-on-save t)
+  :config
+  (add-to-list 'company-backends 'company-elm))
+
+(use-package flycheck-elm
+  :after (flycheck)
+  :hook (flycheck-mode . flycheck-elm-setup))
+
+
+;; Python
+(use-package anaconda-mode
+  :hook ((python-mode . anaconda-mode)
+         (python-mode . anaconda-eldoc-mode)))
+
+(setq python-shell-interpreter "python3")
+
+(defvaralias 'flycheck-python-flake8-executable 'python-shell-interpreter)
+
+(use-package company-anaconda
+  :after (company)
+  :config
+  (add-to-list 'company-backends 'company-anaconda))
+
+(use-package py-autopep8
+  :hook (python-mode . py-autopep8-enable-on-save))
+
+
+;; c, c++, Obj-c
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
+
 (use-package irony
-  :config
-  (add-hook 'c++-mode-hook 'irony-mode)
-  (add-hook 'c-mode-hook 'irony-mode)
-  (add-hook 'objc-mode-hook 'irony-mode)
-  (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options))
+  :hook ((c++-mode . irony-mode)
+         (c-mode-hook . irony-mode)
+         (objc-mode . irony-mode)
+         (irony-mode . irony-cdb-autosetup-compile-options)))
+
 (use-package company-irony
+  :after (company)
+  :hook (irony-mode . company-irony-setup-begin-commands)
   :config
-  (add-hook 'irony-mode-hook 'company-irony-setup-begin-commands)
   (setq company-backends (delete 'company-semantic company-backends)))
+
 (use-package company-irony-c-headers
+  :after (company)
   :config
-  (eval-after-load 'company
-    '(add-to-list
-      'company-backends '(company-irony-c-headers company-irony))))
+  (add-to-list
+   'company-backends '(company-irony-c-headers company-irony)))
+
 (use-package flycheck-irony
-  :config
-  (eval-after-load 'flycheck
-    '(add-hook 'flycheck-mode-hook #'flycheck-irony-setup)))
+  :after (flycheck)
+  :hook ((flycheck-mode . flycheck-irony-setup)
+         (c++-mode . (lambda () (setq flycheck-gcc-language-standard "gnu++11")))
+         (c++-mode . (lambda () (setq flycheck-clang-language-standard "gnu++11")))))
 
-;; Mode line fun
-(use-package telephone-line
-  :config
-  (setq telephone-line-lhs
-        '((evil   . (telephone-line-evil-tag-segment))
-          (accent . (telephone-line-vc-segment
-                      telephone-line-erc-modified-channels-segment
-                      telephone-line-process-segment))
-          (nil    . (telephone-line-minor-mode-segment
-                      telephone-line-buffer-segment))))
-  (setq telephone-line-rhs
-        '((nil    . (telephone-line-misc-info-segment))
-          (accent . (telephone-line-major-mode-segment))
-          (evil   . (telephone-line-airline-position-segment))))
-  (setq telephone-line-subseparator-faces '())
-  (setq telephone-line-primary-left-separator 'telephone-line-cubed-right
-        telephone-line-secondary-left-separator 'telephone-line-cubed-hollow-right
-        telephone-line-primary-right-separator 'telephone-line-cubed-right
-        telephone-line-secondary-right-separator 'telephone-line-cubed-hollow-right)
-  (setq telephone-line-height 24)
-  (telephone-line-mode t))
+(use-package clang-format
+  :custom
+  (clang-format-style-option "google")
+  (clang-format-on-save t))
 
-;; Dockerfile syntax highlighting
+
+;; Dockerfiles
 (use-package dockerfile-mode)
 
-;; Fsharp Mode
+
+;; .NET
+(use-package omnisharp
+  :after (company)
+  :hook ((csharp-mode . omnisharp-mode)
+         (fsharp-mode . omnisharp-mode))
+  :config
+  (add-to-list 'company-backends 'company-omnishap))
+
+(use-package csharp-mode)
+
 (use-package fsharp-mode)
 
+
 ;; Web Mode
-(use-package web-mode)
+(use-package web-mode
+  :config
+  (add-to-list 'auto-mode-alist '("\\.cshtml\\'" . web-mode)))
+  
 
-;; Clojure Mode
-(use-package clojure-mode)
 
-;; And Cider
+;; Clojure
+(use-package clojure-mode
+  :config
+  (define-clojure-indent
+    (defroutes 'defun)
+    (GET 2)
+    (POST 2)
+    (PUT 2)
+    (DELETE 2)
+    (HEAD 2)
+    (ANY 2)
+    (OPTIONS 2)
+    (PATCH 2)
+    (rfn 2)
+    (let-routes 1)
+    (context 2)))
+
 (use-package cider)
 
-;; Powershell Mode
+
+;; Powershell
 (use-package powershell)
 
-;; Markdown Mode
+
+;; Markdown
 (use-package markdown-mode
   :commands (markdown-mode gfm-mode)
   :mode (("README\\.md\\'" . gfm-mode)
@@ -209,15 +242,55 @@
          ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "multimarkdown"))
 
-;; C# mode
-(use-package csharp-mode)
 
-;; asm mode customizations
+;; Assembly
 (setq asm-comment-char ?\#)
 
-;; Haskell stuff
+
+;; Haskell
 (use-package haskell-mode)
-(use-package company-ghci)
+
+(use-package company-ghci
+  :after (company)
+  :config
+  (add-to-list 'company-backends 'company-ghci))
+
+
+;; Latex
+(require 'ox-latex)
+
+(setq org-latex-listings 'minted)
+
+(add-to-list 'org-latex-packages-alist '("" "minted"))
+
+(setq org-latex-pdf-process
+      '("xelatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+        "xelatex -interaction nonstopmode -shell-escape -output-directory %o %f"
+        "xelatex -interaction nonstopmode -shell-escape -output-directory %o %f"))
+
+
+;; Elixir
+(use-package elixir-mode)
+
+(use-package alchemist)
+
+
+;; Rust
+(use-package rust-mode
+  :config
+  (setq rust-format-on-save t))
+
+(use-package cargo
+  :hook (rust-mode . cargo-minor-mode))
+
+(use-package racer
+  :hook ((rust-mode . racer-mode)
+         (racer-mode . eldoc-mode)))
+
+(use-package flycheck-rust
+  :after (rust-mode)
+  :hook (flycheck-mode . flycheck-rust-setup))
+
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -226,17 +299,31 @@
  ;; If there is more than one, they won't work right.
  '(ansi-color-faces-vector
    [default default default italic underline success warning error])
+ '(auto-package-update-delete-old-versions t)
+ '(auto-package-update-hide-results t)
  '(blink-cursor-mode nil)
+ '(clang-format-on-save t t)
+ '(clang-format-style-option "google" t)
+ '(custom-enabled-themes (quote (sanityinc-tomorrow-bright)))
  '(custom-safe-themes
    (quote
-    ("a24c5b3c12d147da6cef80938dca1223b7c7f70f2f382b26308eba014dc4833a" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "98cc377af705c0f2133bb6d340bf0becd08944a588804ee655809da5d8140de6" "04dd0236a367865e591927a3810f178e8d33c372ad5bfef48b5ce90d4b476481" default)))
+    ("1b8d67b43ff1723960eb5e0cba512a2c7a2ad544ddb2533a90101fd1852b426e" "06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "bb08c73af94ee74453c90422485b29e5643b73b05e8de029a6909af6a3fb3f58" "a24c5b3c12d147da6cef80938dca1223b7c7f70f2f382b26308eba014dc4833a" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "98cc377af705c0f2133bb6d340bf0becd08944a588804ee655809da5d8140de6" "04dd0236a367865e591927a3810f178e8d33c372ad5bfef48b5ce90d4b476481" default)))
+ '(elm-format-on-save t)
+ '(elm-sort-imports-on-save t)
  '(erc-modules
    (quote
     (autojoin button completion fill irccontrols list match menu move-to-prompt netsplit networks noncommands readonly ring stamp track)))
+ '(inhibit-splash-screen t)
+ '(initial-scratch-message nil)
  '(menu-bar-mode nil)
  '(package-selected-packages
    (quote
-    (csharp-mode markdown-mode powershell cider fsharp-mode rainbow-delimiters company company-mode flycheck-elm flycheck use-package solarized-theme org evil)))
+    (flycheck-rust alchemist elixir-mode color-theme-sanityinc-tomorrow color-theme-tomorrow clang-format aggressive-indent csharp-mode markdown-mode powershell cider fsharp-mode rainbow-delimiters company company-mode flycheck-elm flycheck use-package solarized-theme org evil)))
+ '(safe-local-variable-values
+   (quote
+    ((flycheck-cppcheck-language-standard . "c++11")
+     (flycheck-disabled-checkers quote
+                                 (c/c++-clang)))))
  '(scroll-bar-mode nil)
  '(tool-bar-mode nil))
 
@@ -249,16 +336,39 @@
  )
 
 
+;; Asthetics Below Here
+
+;; Mode line
+(use-package telephone-line
+  :config
+  (setq telephone-line-lhs
+        '((evil   . (telephone-line-evil-tag-segment))
+          (accent . (telephone-line-major-mode-segment))
+          (nil    . (telephone-line-buffer-segment
+                     telephone-line-minor-mode-segment))))
+  (setq telephone-line-rhs
+        '((nil    . (telephone-line-misc-info-segment))
+          (accent . (telephone-line-vc-segment
+                     telephone-line-process-segment))
+          (evil   . (telephone-line-airline-position-segment))))
+  (setq telephone-line-subseparator-faces '())
+  (setq telephone-line-primary-left-separator 'telephone-line-gradient
+        telephone-line-secondary-left-separator 'telephone-line-flat
+        telephone-line-primary-right-separator 'telephone-line-gradient
+        telephone-line-secondary-right-separator 'telephone-line-gradient)
+  (setq telephone-line-height 18)
+  (telephone-line-mode t))
+
 ;; Material theme
 (use-package material-theme
   :config
   (load-theme 'material))
 
-;; Rainbow Delimiters are pretty!
+;; Rainbow Delimiters
 (use-package rainbow-delimiters
-  :config
-  (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
-  (add-hook 'latex-mode-hook #'rainbow-delimiters-mode))
+  :hook ((prog-mode . rainbow-delimiters-mode)
+         (latex-mode . rainbow-delimiters-mode)))
+
 
 (provide '.emacs)
 ;;; .emacs end here
