@@ -5,6 +5,7 @@
 	email = ross.lannen@gmail.com
 [core]
 	autocrlf = input
+	excludesfile = /home/ross/.gitignore_global
 [alias]
 	s = status
 	b = branch

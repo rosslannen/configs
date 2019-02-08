@@ -2,7 +2,10 @@
 export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-  export ZSH=/home/ross/.oh-my-zsh
+export ZSH=/home/ross/.oh-my-zsh
+
+# John the Ripper stuff. Might delete later
+export JOHN=$HOME/.john
 
 # Set name of the theme to load. Optionally, if you set this to "random"
 # it'll load a random theme each time that oh-my-zsh is loaded.
@@ -94,4 +97,7 @@ source $HOME/.bash_aliases
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
+#
+source $HOME/anaconda3/etc/profile.d/conda.sh
+
 xcape -e 'Caps_Lock=Escape;Control_L=Escape'

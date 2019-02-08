@@ -16,7 +16,6 @@
 (require 'package)
 (setq package-enable-at-startup nil)
 (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
-(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
 (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
 
 ;; Install 'use-package' if necessary
@@ -32,12 +31,12 @@
 ;; init-use-package.el ends here
 
 ;; Auto updating
-(use-package auto-package-update
-  :custom
-  (auto-package-update-delete-old-versions t)
-  (auto-package-update-hide-results t)
-  :config
-  (auto-package-update-maybe))
+;;(use-package auto-package-update
+;;  :custom
+;;  (auto-package-update-delete-old-versions t)
+;;  (auto-package-update-hide-results t)
+;;  :config
+;;  (auto-package-update-maybe))
 
 ;; Basic defaults
 ;; Set encoding to UTF-8
@@ -58,10 +57,10 @@
 ;; TRAMP settings for remote hosts
 (setq tramp-default-method "ssh")
 
+
 ;; Aggressive Indentation
 (use-package aggressive-indent
-  :config
-  (global-aggressive-indent-mode 1))
+  :hook ((clojure-mode cider-repl-mode slime-mode) . aggressive-indent-mode))
 
 
 ;; Evil mode
@@ -69,6 +68,7 @@
   :config
   (progn
     (evil-mode 1))
+  (setq evil-ex-substitute-global t)
   (define-key evil-normal-state-map (kbd "<remap> <evil-next-line>") 'evil-next-visual-line)
   (define-key evil-normal-state-map (kbd "<remap> <evil-previous-line>") 'evil-previous-visual-line)
   (define-key evil-motion-state-map (kbd "<remap> <evil-next-line>") 'evil-next-visual-line)
@@ -76,7 +76,16 @@
 
 
 ;; Org mode
-(use-package org)
+(use-package org
+  :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (latex . t)))
+  :hook (org-mode . visual-line-mode))
+
+(use-package org-bullets
+  :hook (org-mode . org-bullets-mode))
 ;; (use-package evil-org)
 
 
@@ -86,7 +95,9 @@
 
 ;; Company
 (use-package company
-  :hook (after-init . global-company-mode))
+  :hook (after-init . global-company-mode)
+  :config
+  (setq company-minimum-prefix-length 1))
 
 (use-package company-quickhelp
   :config
@@ -121,12 +132,27 @@
 (use-package gitignore-mode)
 
 
+;; Projectile
+(use-package projectile
+  :config
+  (define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
+
+
 ;; Elm
 (use-package elm-mode
   :after (company)
   :custom
   (elm-format-on-save t)
   (elm-sort-imports-on-save t)
+  (elm-format-command "elm-format")
+  (elm-interactive-command '("elm" "repl"))
+  (elm-reactor-command '("elm" "reactor"))
+  (elm-package-command '("elm" "package"))
+  (elm-sort-imports-on-save t)
+  (elm-tags-on-save t)
+  (elm-package-json "elm.json")
+  (elm-indent-look-past-empty-line nil)
   :config
   (add-to-list 'company-backends 'company-elm))
 
@@ -149,8 +175,10 @@
   :config
   (add-to-list 'company-backends 'company-anaconda))
 
-(use-package py-autopep8
-  :hook (python-mode . py-autopep8-enable-on-save))
+;(use-package py-autopep8
+;  :hook (python-mode . py-autopep8-enable-on-save)
+;  :config
+;  (setq py-autopep8-options '("--ignore E501")))
 
 
 ;; c, c++, Obj-c
@@ -206,8 +234,22 @@
 ;; Web Mode
 (use-package web-mode
   :config
-  (add-to-list 'auto-mode-alist '("\\.cshtml\\'" . web-mode)))
-  
+  (add-to-list 'auto-mode-alist '("\\.cshtml\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.php\\'" . web-mode))
+  (setq web-mode-markup-indent-offset 2)
+  (setq web-mode-css-indent-offset 2)
+  (setq web-mode-code-indent-offset 2)
+  (setq web-mode-style-padding 0)
+  (setq web-mode-script-padding 0))
+
+
+;; Vue Mode
+(use-package vue-mode)
+
+(use-package mmm-mode
+  :config
+  (setq mmm-submode-decoration-level 0))
 
 
 ;; Clojure
@@ -227,7 +269,13 @@
     (let-routes 1)
     (context 2)))
 
-(use-package cider)
+(use-package cider
+  :hook (cider-repl-mode . rainbow-delimiters-mode))
+
+
+;; Paredit
+(use-package paredit
+  :hook ((clojure-mode cider-repl-mode slime-mode) . enable-paredit-mode))
 
 
 ;; Powershell
@@ -240,6 +288,7 @@
   :mode (("README\\.md\\'" . gfm-mode)
          ("\\.md\\'" . markdown-mode)
          ("\\.markdown\\'" . markdown-mode))
+  :hook (markdown-mode . visual-line-mode)
   :init (setq markdown-command "multimarkdown"))
 
 
@@ -259,9 +308,9 @@
 ;; Latex
 (require 'ox-latex)
 
-(setq org-latex-listings 'minted)
+; (setq org-latex-listings 'minted)
 
-(add-to-list 'org-latex-packages-alist '("" "minted"))
+; (add-to-list 'org-latex-packages-alist '("" "minted"))
 
 (setq org-latex-pdf-process
       '("xelatex -interaction nonstopmode -shell-escape -output-directory %o %f"
@@ -292,6 +341,92 @@
   :hook (flycheck-mode . flycheck-rust-setup))
 
 
+;; Javascript
+(defun my/use-eslint-from-node-modules ()
+  "Use local eslint file for flycheck if it exists."
+  (let* ((root (locate-dominating-file
+                (or (buffer-file-name) default-directory)
+                "node_modules"))
+         (eslint (and root
+                      (expand-file-name "node_modules/eslint/bin/eslint.js" root))))
+    (when (and eslint (file-executable-p eslint))
+      (setq-local flycheck-javascript-eslint-executable eslint))))
+
+(use-package js2-mode
+  :after flycheck
+  :mode "\\.js\\'"
+  :hook (js2-mode . js2-imenu-extras-mode)
+  :config
+  (setq-default flycheck-disabled-checkers
+                (append flycheck-disabled-checkers
+                        '(javascript-jshint)))
+  (flycheck-add-mode 'javascript-eslint 'web-mode)
+  (flycheck-add-mode 'javascript-eslint 'js2-mode)
+  (setq-default flycheck-temp-prefix ".flycheck")
+  (add-hook 'flycheck-mode-hook #'my/use-eslint-from-node-modules)
+  (setq js-indent-level 2))
+
+(use-package xref-js2
+  :after js2-mode
+  :config
+  (define-key js-mode-map (kbd "M-.") nil)
+  (add-hook 'js2-mode-hook
+            (lambda ()
+              (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t))))
+
+(use-package company-tern
+  :after company
+  :config
+  (add-to-list 'company-backends 'company-tern)
+  (add-hook 'js2-mode-hook (lambda ()
+                             (tern-mode)
+                             (company-mode)))
+  (define-key tern-mode-keymap (kbd "M-.") nil)
+  (define-key tern-mode-keymap (kbd "M-,") nil))
+
+(use-package web-beautify
+  :config
+  (eval-after-load 'js2-mode
+    '(define-key js2-mode-map (kbd "C-c b") 'web-beautify-js))
+  (eval-after-load 'json-mode
+    '(define-key json-mode-map (kbd "C-c b") 'web-beautify-js))
+  (eval-after-load 'web-mode
+    '(define-key web-mode-map (kbd "C-c b") 'web-beautify-html))
+  (eval-after-load 'css-mode
+    '(define-key css-mode-map (kbd "C-c b") 'web-beautify-css)))
+
+
+;; TypeScript
+(use-package typescript-mode)
+
+(use-package tide
+  :after (typescript-mode company flycheck)
+  :hook ((typescript-mode . tide-setup)
+         (typescript-mode . tide-hl-identifier-mode)
+         (before-save . tide-format-before-save)))
+
+
+;; JSON
+(use-package json-mode
+  :config
+  (setq js-indent-level 2))
+
+
+;; Golang
+(use-package go-mode)
+
+(use-package company-go)
+
+(use-package flycheck-gometalinter)
+
+
+;; SLIME
+(use-package slime
+  :config
+  (setq inferior-lisp-program "/usr/bin/clisp")
+  (setq slime-contribs '(slime-fancy)))
+
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -308,12 +443,20 @@
  '(custom-safe-themes
    (quote
     ("1b8d67b43ff1723960eb5e0cba512a2c7a2ad544ddb2533a90101fd1852b426e" "06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "bb08c73af94ee74453c90422485b29e5643b73b05e8de029a6909af6a3fb3f58" "a24c5b3c12d147da6cef80938dca1223b7c7f70f2f382b26308eba014dc4833a" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "98cc377af705c0f2133bb6d340bf0becd08944a588804ee655809da5d8140de6" "04dd0236a367865e591927a3810f178e8d33c372ad5bfef48b5ce90d4b476481" default)))
+ '(elm-format-command "elm-format")
  '(elm-format-on-save t)
+ '(elm-indent-look-past-empty-line nil)
+ '(elm-interactive-command (quote ("elm" "repl")))
+ '(elm-package-command (quote ("elm" "package")))
+ '(elm-package-json "elm.json")
+ '(elm-reactor-command (quote ("elm" "reactor")))
  '(elm-sort-imports-on-save t)
+ '(elm-tags-on-save t)
  '(erc-modules
    (quote
     (autojoin button completion fill irccontrols list match menu move-to-prompt netsplit networks noncommands readonly ring stamp track)))
  '(inhibit-splash-screen t)
+ '(inhibit-startup-screen t)
  '(initial-scratch-message nil)
  '(menu-bar-mode nil)
  '(package-selected-packages
@@ -321,7 +464,13 @@
     (flycheck-rust alchemist elixir-mode color-theme-sanityinc-tomorrow color-theme-tomorrow clang-format aggressive-indent csharp-mode markdown-mode powershell cider fsharp-mode rainbow-delimiters company company-mode flycheck-elm flycheck use-package solarized-theme org evil)))
  '(safe-local-variable-values
    (quote
-    ((flycheck-cppcheck-language-standard . "c++11")
+    ((eval progn
+           (add-to-list
+            (quote exec-path)
+            (concat
+             (locate-dominating-file default-directory ".dir-locals.el")
+             "node_modules/.bin/")))
+     (flycheck-cppcheck-language-standard . "c++11")
      (flycheck-disabled-checkers quote
                                  (c/c++-clang)))))
  '(scroll-bar-mode nil)
