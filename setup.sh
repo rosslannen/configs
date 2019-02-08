@@ -1,4 +1,4 @@
-CONFIGS=$HOME/configs
+export CONFIGS=$HOME/configs
 
 ln -s $CONFIGS/.bash_aliases $HOME/.bash_aliases
 ln -s $CONFIGS/.emacs $HOME/.emacs
