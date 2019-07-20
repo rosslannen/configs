@@ -49,7 +49,8 @@
   (global-linum-mode t)
   :custom
   (inhibit-splash-screen t)
-  (initial-scratch-message nil))
+  (initial-scratch-message nil)
+  (tab-width 4))
 
 (setq inhibit-splash-screen t
       initial-scratch-message nil)
@@ -97,7 +98,8 @@
 (use-package company
   :hook (after-init . global-company-mode)
   :config
-  (setq company-minimum-prefix-length 1))
+  (setq company-minimum-prefix-length 1)
+  (setq company-idle-delay 0.2))
 
 (use-package company-quickhelp
   :config
@@ -134,6 +136,7 @@
 
 ;; Projectile
 (use-package projectile
+  :hook (after-init . projectile-mode)
   :config
   (define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
@@ -233,10 +236,14 @@
 
 ;; Web Mode
 (use-package web-mode
-  :config
+  :init
   (add-to-list 'auto-mode-alist '("\\.cshtml\\'" . web-mode))
   (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
   (add-to-list 'auto-mode-alist '("\\.php\\'" . web-mode))
+  (setq web-mode-engines-alist
+        '(("django" . "/jekyll/.*\\.html\\'")))
+  :config
+  (setq web-mode-enable-engine-detection t)
   (setq web-mode-markup-indent-offset 2)
   (setq web-mode-css-indent-offset 2)
   (setq web-mode-code-indent-offset 2)
@@ -307,6 +314,7 @@
 
 ;; Latex
 (require 'ox-latex)
+(add-hook 'latex-mode 'visual-line-mode)
 
 ; (setq org-latex-listings 'minted)
 
@@ -352,10 +360,17 @@
     (when (and eslint (file-executable-p eslint))
       (setq-local flycheck-javascript-eslint-executable eslint))))
 
+(use-package add-node-modules-path)
+
+(use-package prettier-js
+  :hook (typescript-mode, web-mode, scss-mode))
+
 (use-package js2-mode
   :after flycheck
   :mode "\\.js\\'"
-  :hook (js2-mode . js2-imenu-extras-mode)
+  :hook ((js2-mode . js2-imenu-extras-mode)
+         (js2-mode . add-node-modules-path)
+         (js2-mode . prettier-js-mode))
   :config
   (setq-default flycheck-disabled-checkers
                 (append flycheck-disabled-checkers
@@ -364,7 +379,8 @@
   (flycheck-add-mode 'javascript-eslint 'js2-mode)
   (setq-default flycheck-temp-prefix ".flycheck")
   (add-hook 'flycheck-mode-hook #'my/use-eslint-from-node-modules)
-  (setq js-indent-level 2))
+  (setq js-indent-level 2)
+  (setq js2-strict-missing-semi-warning nil))
 
 (use-package xref-js2
   :after js2-mode
@@ -372,7 +388,21 @@
   (define-key js-mode-map (kbd "M-.") nil)
   (add-hook 'js2-mode-hook
             (lambda ()
+              (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t)))
+  (add-hook 'rjsx-mode-hook
+            (lambda ()
               (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t))))
+
+(use-package rjsx-mode
+  :hook ((rjsx-mode . add-node-modules-path)
+         (rjsx-mode . prettier-js-mode))
+  :mode "\\.js\\'"
+  :config
+  (setq-default flycheck-disabled-checkers
+                (append flycheck-disabled-checkers
+                        '(javascript-jshint)))
+  (flycheck-add-mode 'javascript-eslint 'rjsx-mode)
+  (setq-default flycheck-temp-prefix ".flycheck"))
 
 (use-package company-tern
   :after company
@@ -381,23 +411,17 @@
   (add-hook 'js2-mode-hook (lambda ()
                              (tern-mode)
                              (company-mode)))
+  (add-hook 'rjsx-mode-hook (lambda ()
+                              (tern-mode)
+                              (company-mode)))
   (define-key tern-mode-keymap (kbd "M-.") nil)
   (define-key tern-mode-keymap (kbd "M-,") nil))
 
-(use-package web-beautify
-  :config
-  (eval-after-load 'js2-mode
-    '(define-key js2-mode-map (kbd "C-c b") 'web-beautify-js))
-  (eval-after-load 'json-mode
-    '(define-key json-mode-map (kbd "C-c b") 'web-beautify-js))
-  (eval-after-load 'web-mode
-    '(define-key web-mode-map (kbd "C-c b") 'web-beautify-html))
-  (eval-after-load 'css-mode
-    '(define-key css-mode-map (kbd "C-c b") 'web-beautify-css)))
-
 
 ;; TypeScript
-(use-package typescript-mode)
+(use-package typescript-mode
+  :config
+  (setq typescript-indent-level 2))
 
 (use-package tide
   :after (typescript-mode company flycheck)
@@ -406,14 +430,35 @@
          (before-save . tide-format-before-save)))
 
 
+;; Css
+(use-package css-mode
+  :config
+  (setq css-indent-offset 2))
+
+
 ;; JSON
 (use-package json-mode
   :config
   (setq js-indent-level 2))
 
 
+;; Yaml
+(use-package yaml-mode
+  :init
+  (add-hook 'yaml-mode-hook
+            (lambda ()
+              (define-key yaml-mode-map "\C-m" 'newline-and-indent))))
+
+
 ;; Golang
-(use-package go-mode)
+(use-package go-mode
+  :config
+  (setq exec-path (append '("/usr/local/go/bin") exec-path))
+  (setenv "PATH" (concat "/usr/local/go/bin:" (getenv "PATH")))
+  (add-hook 'before-save-hook 'gofmt-before-save))
+
+(use-package go-eldoc
+  :hook (go-mode))
 
 (use-package company-go)
 
@@ -425,6 +470,16 @@
   :config
   (setq inferior-lisp-program "/usr/bin/clisp")
   (setq slime-contribs '(slime-fancy)))
+
+
+;; Nginx Config Files
+(use-package nginx-mode
+  :config
+  (add-to-list 'auto-mode-alist '("/etc/nginx/sites-\\(?:available\\|enabled\\)/" . nginx-mode)))
+
+
+;; Systemd Unit Files
+(use-package systemd)
 
 
 (custom-set-variables
@@ -464,7 +519,13 @@
     (flycheck-rust alchemist elixir-mode color-theme-sanityinc-tomorrow color-theme-tomorrow clang-format aggressive-indent csharp-mode markdown-mode powershell cider fsharp-mode rainbow-delimiters company company-mode flycheck-elm flycheck use-package solarized-theme org evil)))
  '(safe-local-variable-values
    (quote
-    ((eval progn
+    ((engine . liquid)
+     (web-mode-engines-alist
+      ("liquid" . "\\.html\\'"))
+     (web-mode-engines-alist
+      ("django" . "\\.html\\'"))
+     (engine . django)
+     (eval progn
            (add-to-list
             (quote exec-path)
             (concat
@@ -474,6 +535,7 @@
      (flycheck-disabled-checkers quote
                                  (c/c++-clang)))))
  '(scroll-bar-mode nil)
+ '(tab-width 4)
  '(tool-bar-mode nil))
 
 
