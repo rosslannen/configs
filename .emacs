@@ -9,6 +9,7 @@
 (setq user-full-name "Ross Lannen")
 (setq user-mail-address "ross.lannen@gmail.com")
 
+(setq gnutls-algorithm-priority "NORMAL:-VERS_TLS1.3")
 (package-initialize)
 
 ;; init-use-package.el
@@ -30,13 +31,8 @@
 (setq use-package-always-ensure t)
 ;; init-use-package.el ends here
 
-;; Auto updating
-;;(use-package auto-package-update
-;;  :custom
-;;  (auto-package-update-delete-old-versions t)
-;;  (auto-package-update-hide-results t)
-;;  :config
-;;  (auto-package-update-maybe))
+;; Enables some garbage collection magic
+(use-package gcmh)
 
 ;; Basic defaults
 ;; Set encoding to UTF-8
@@ -45,23 +41,88 @@
 (prefer-coding-system 'utf-8)
 
 (use-package better-defaults
-  :config
-  (global-linum-mode t)
   :custom
   (inhibit-splash-screen t)
   (initial-scratch-message nil)
   (tab-width 4))
 
-(setq inhibit-splash-screen t
-      initial-scratch-message nil)
+
+;; Line numbers
+(use-package display-line-numbers
+  :ensure nil
+  :init
+  ;; Uncomment to set relative line numbers
+  ;; (setq display-line-numbers-type 'relative)
+  :config
+  (global-display-line-numbers-mode t))
 
 ;; TRAMP settings for remote hosts
-(setq tramp-default-method "ssh")
+(use-package tramp
+  :ensure nil
+  :init
+  (setq tramp-default-method "ssh"))
+
+
+;; Utility to restart Emacs from Emacs
+(use-package restart-emacs)
+
+
+;; Dired customizations
+(use-package dired
+  :ensure nil
+  :init
+  (setq dired-auto-revert-buffer t))
+
+(use-package dired-aux
+  :ensure nil)
+
+(use-package dired-x
+  :ensure nil
+  :config
+  (let ((cmd "xdg-open"))
+    (setq dired-guess-shell-alist-user
+          `(("\\.pdf\\'" ,cmd)
+            ("\\.docx\\'" ,cmd)
+            ("\\.\\(?:jpg\\|jpeg\\|png\\|gif\\|xpm\\)\\'" ,cmd)
+            ("\\.\\(?:mp4\\|mkv\\|avi\\|flv\\|rm\\|rmvb\\|ogv\\)\\(?:\\.part\\)?\\'" ,cmd)
+            ("\\.\\(:?mp3\\|flac\\)\\'" ,cmd)
+            ("\\.html?\\'" ,cmd)
+            ("\\.md\\'" ,cmd)))))
+
+(when (executable-find "fd")
+  (use-package fd-dired))
+
+(use-package dired-git-info
+  ;; One of these 2 should be set
+  :init
+  (setq dgi-auto-hide-details-p nil)
+  ;; :config
+  ;; (define-key dired-mode-map ")" 'dired-git-info-mode)
+  :hook (dired-after-readin . dired-git-info-auto-enable))
+
+(use-package diredfl
+  :config (diredfl-global-mode))
+
+
+;; Improves and replaces the built-in help menus
+(use-package helpful
+  :bind (([remap describe-function] . helpful-callable)
+         ([remap describe-variable] . helpful-variable)
+         ([remap describe-key] . helpful-key)))
+;; These should be uncommented if Ivy is installed
+  ;; :config
+  ;; (setq counsel-describe-function-function #'helpful-callable)
+  ;; (setq counsel-describe-variable-function #'helpful-variable))
 
 
 ;; Aggressive Indentation
 (use-package aggressive-indent
   :hook ((clojure-mode cider-repl-mode slime-mode) . aggressive-indent-mode))
+
+
+;; Improved Commenting
+(use-package comment-dwim-2
+  :bind ([remap comment-dwim] . comment-dwim-2))
 
 
 ;; Evil mode
@@ -70,10 +131,19 @@
   (progn
     (evil-mode 1))
   (setq evil-ex-substitute-global t)
-  (define-key evil-normal-state-map (kbd "<remap> <evil-next-line>") 'evil-next-visual-line)
-  (define-key evil-normal-state-map (kbd "<remap> <evil-previous-line>") 'evil-previous-visual-line)
-  (define-key evil-motion-state-map (kbd "<remap> <evil-next-line>") 'evil-next-visual-line)
-  (define-key evil-motion-state-map (kbd "<remap> <evil-previous-line>") 'evil-previous-visual-line))
+  (define-key evil-normal-state-map
+    (kbd "<remap> <evil-next-line>")
+    'evil-next-visual-line)
+  (define-key evil-normal-state-map
+    (kbd "<remap> <evil-previous-line>")
+    'evil-previous-visual-line)
+  (define-key evil-motion-state-map
+    (kbd "<remap> <evil-next-line>")
+    'evil-next-visual-line)
+  (define-key evil-motion-state-map
+    (kbd "<remap> <evil-previous-line>")
+    'evil-previous-visual-line)
+  (add-to-list 'evil-motion-state-modes 'special-mode))
 
 
 ;; Org mode
@@ -87,11 +157,15 @@
 
 (use-package org-bullets
   :hook (org-mode . org-bullets-mode))
-;; (use-package evil-org)
 
 
 ;; Helm incremental narrowing search framework
 (use-package helm)
+
+
+;; Key-binding help
+(use-package which-key
+  :config (which-key-mode))
 
 
 ;; Company
@@ -109,13 +183,41 @@
 ;; Flycheck
 (use-package flycheck
   :init
-  (global-flycheck-mode))
+  (global-flycheck-mode)
+  (setq flycheck-display-errors-delay 0.4))
+
+(use-package flycheck-inline
+  :hook (flycheck-mode . flycheck-inline-mode))
+
+(use-package flycheck-color-mode-line
+  :hook (flycheck-mode . flycheck-color-mode-line-mode))
+
+
+;; LSP
+(use-package lsp-mode
+  :hook (elm-mode (scala-mode . lsp)))
+
+(use-package etags
+  :ensure nil
+  :init
+  (setq tags-revert-without-query t))
+
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode))
+
+(use-package company-lsp
+  :init
+  (push 'company-lsp company-backends))
 
 
 ;; YASnippet
-;;(use-package yasnippet
-;;  :config
-;;  (yas-global-mode 1))
+(use-package yasnippet)
+;  :config
+;  (yas-global-mode 1))
+
+
+;; Smartparens
+(use-package smartparens)
 
 
 ;; Multi-Term
@@ -128,12 +230,6 @@
     "P" 'term-paste))
 
 
-;; Git
-(use-package magit)
-
-(use-package gitignore-mode)
-
-
 ;; Projectile
 (use-package projectile
   :hook (after-init . projectile-mode)
@@ -142,22 +238,15 @@
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
 
 
+;; Git
+(use-package magit
+  :bind ("C-x g" . magit-status))
+
+(use-package gitignore-mode)
+
+
 ;; Elm
-(use-package elm-mode
-  :after (company)
-  :custom
-  (elm-format-on-save t)
-  (elm-sort-imports-on-save t)
-  (elm-format-command "elm-format")
-  (elm-interactive-command '("elm" "repl"))
-  (elm-reactor-command '("elm" "reactor"))
-  (elm-package-command '("elm" "package"))
-  (elm-sort-imports-on-save t)
-  (elm-tags-on-save t)
-  (elm-package-json "elm.json")
-  (elm-indent-look-past-empty-line nil)
-  :config
-  (add-to-list 'company-backends 'company-elm))
+(use-package elm-mode)
 
 (use-package flycheck-elm
   :after (flycheck)
@@ -185,7 +274,10 @@
 
 
 ;; c, c++, Obj-c
-(add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
+(use-package cc-mode
+  :ensure nil
+  :init
+  (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode)))
 
 (use-package irony
   :hook ((c++-mode . irony-mode)
@@ -208,8 +300,8 @@
 (use-package flycheck-irony
   :after (flycheck)
   :hook ((flycheck-mode . flycheck-irony-setup)
-         (c++-mode . (lambda () (setq flycheck-gcc-language-standard "gnu++11")))
-         (c++-mode . (lambda () (setq flycheck-clang-language-standard "gnu++11")))))
+         (c++-mode . (lambda () (setq flycheck-gcc-language-standard "gnu++17")))
+         (c++-mode . (lambda () (setq flycheck-clang-language-standard "gnu++17")))))
 
 (use-package clang-format
   :custom
@@ -236,27 +328,38 @@
 
 ;; Web Mode
 (use-package web-mode
+  :mode "\\.\\([jt]s[x]?\\|html?\\)\\'"
   :init
-  (add-to-list 'auto-mode-alist '("\\.cshtml\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.php\\'" . web-mode))
-  (setq web-mode-engines-alist
-        '(("django" . "/jekyll/.*\\.html\\'")))
-  :config
-  (setq web-mode-enable-engine-detection t)
+  (setq web-mode-content-types-alist
+        '(("jsx" . "\\.js[x]?\\'")
+          ("angular" . "\\.component\\.html\\'")))
   (setq web-mode-markup-indent-offset 2)
-  (setq web-mode-css-indent-offset 2)
+  (setq web-mode-attr-indent-offset 2)
   (setq web-mode-code-indent-offset 2)
-  (setq web-mode-style-padding 0)
-  (setq web-mode-script-padding 0))
-
-
-;; Vue Mode
-(use-package vue-mode)
-
-(use-package mmm-mode
+  (setq web-mode-enable-auto-quoting nil)
   :config
-  (setq mmm-submode-decoration-level 0))
+  (when (and (featurep 'flycheck) (string-match "html?" (file-name-extension buffer-file-name)))
+    (flycheck-add-mode 'html-tidy 'web-mode)))
+
+(use-package prettier-js
+  :hook (web-mode . prettier-js-mode))
+
+(use-package add-node-modules-path
+  :hook (web-mode lsp-mode))
+
+(defun setup-tide-mode ()
+  "Set up tide mode with required minor modes."
+  (tide-setup)
+  (eldoc-mode +1)
+  (tide-hl-identifier-mode +1))
+
+(use-package tide
+  :hook (web-mode . (lambda ()
+                      (when (string-match "[jt]s[x]?" (file-name-extension buffer-file-name))
+                        (setup-tide-mode)
+                        (when (featurep 'flycheck)
+                        (flycheck-add-mode 'typescript-tslint 'web-mode)
+                        (flycheck-add-next-checker 'typescript-tslint 'jsx-tide 'append))))))
 
 
 ;; Clojure
@@ -285,6 +388,23 @@
   :hook ((clojure-mode cider-repl-mode slime-mode) . enable-paredit-mode))
 
 
+;; Scala
+(use-package scala-mode)
+; :mode "\\.s\\(cala\\|bt\\)$"
+
+(use-package sbt-mode
+  :commands sbt-start sbt-command
+  :config
+  ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
+  ;; allows using SPACE when in the minibuffer
+  (substitute-key-definition
+   'minibuffer-complete-word
+   'self-insert-command
+   minibuffer-local-completion-map)
+   ;; sbt-supershell kills sbt-mode:  https://github.com/hvesalai/emacs-sbt-mode/issues/152
+  (setq sbt:program-options '("-Dsbt.supershell=false")))
+
+
 ;; Powershell
 (use-package powershell)
 
@@ -300,7 +420,10 @@
 
 
 ;; Assembly
-(setq asm-comment-char ?\#)
+(use-package asm-mode
+  :ensure nil
+  :init
+  (setq asm-comment-char ?\#))
 
 
 ;; Haskell
@@ -350,84 +473,13 @@
 
 
 ;; Javascript
-(defun my/use-eslint-from-node-modules ()
-  "Use local eslint file for flycheck if it exists."
-  (let* ((root (locate-dominating-file
-                (or (buffer-file-name) default-directory)
-                "node_modules"))
-         (eslint (and root
-                      (expand-file-name "node_modules/eslint/bin/eslint.js" root))))
-    (when (and eslint (file-executable-p eslint))
-      (setq-local flycheck-javascript-eslint-executable eslint))))
+(use-package js2-mode)
 
-(use-package add-node-modules-path)
+(use-package xref-js2)
 
-(use-package prettier-js
-  :hook (typescript-mode, web-mode, scss-mode))
+(use-package rjsx-mode)
 
-(use-package js2-mode
-  :after flycheck
-  :mode "\\.js\\'"
-  :hook ((js2-mode . js2-imenu-extras-mode)
-         (js2-mode . add-node-modules-path)
-         (js2-mode . prettier-js-mode))
-  :config
-  (setq-default flycheck-disabled-checkers
-                (append flycheck-disabled-checkers
-                        '(javascript-jshint)))
-  (flycheck-add-mode 'javascript-eslint 'web-mode)
-  (flycheck-add-mode 'javascript-eslint 'js2-mode)
-  (setq-default flycheck-temp-prefix ".flycheck")
-  (add-hook 'flycheck-mode-hook #'my/use-eslint-from-node-modules)
-  (setq js-indent-level 2)
-  (setq js2-strict-missing-semi-warning nil))
-
-(use-package xref-js2
-  :after js2-mode
-  :config
-  (define-key js-mode-map (kbd "M-.") nil)
-  (add-hook 'js2-mode-hook
-            (lambda ()
-              (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t)))
-  (add-hook 'rjsx-mode-hook
-            (lambda ()
-              (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t))))
-
-(use-package rjsx-mode
-  :hook ((rjsx-mode . add-node-modules-path)
-         (rjsx-mode . prettier-js-mode))
-  :mode "\\.js\\'"
-  :config
-  (setq-default flycheck-disabled-checkers
-                (append flycheck-disabled-checkers
-                        '(javascript-jshint)))
-  (flycheck-add-mode 'javascript-eslint 'rjsx-mode)
-  (setq-default flycheck-temp-prefix ".flycheck"))
-
-(use-package company-tern
-  :after company
-  :config
-  (add-to-list 'company-backends 'company-tern)
-  (add-hook 'js2-mode-hook (lambda ()
-                             (tern-mode)
-                             (company-mode)))
-  (add-hook 'rjsx-mode-hook (lambda ()
-                              (tern-mode)
-                              (company-mode)))
-  (define-key tern-mode-keymap (kbd "M-.") nil)
-  (define-key tern-mode-keymap (kbd "M-,") nil))
-
-
-;; TypeScript
-(use-package typescript-mode
-  :config
-  (setq typescript-indent-level 2))
-
-(use-package tide
-  :after (typescript-mode company flycheck)
-  :hook ((typescript-mode . tide-setup)
-         (typescript-mode . tide-hl-identifier-mode)
-         (before-save . tide-format-before-save)))
+(use-package company-tern)
 
 
 ;; Css
@@ -450,6 +502,11 @@
               (define-key yaml-mode-map "\C-m" 'newline-and-indent))))
 
 
+;; Protocol Buffers
+(use-package protobuf-mode
+  :hook (protobuf-mode . rainbow-delimiters-mode))
+
+
 ;; Golang
 (use-package go-mode
   :config
@@ -463,6 +520,11 @@
 (use-package company-go)
 
 (use-package flycheck-gometalinter)
+
+
+;; Groovy (Jenkinsfiles)
+(use-package groovy-mode
+  :mode "\\Jenkinsfile\\'")
 
 
 ;; SLIME
@@ -480,6 +542,12 @@
 
 ;; Systemd Unit Files
 (use-package systemd)
+
+
+;; VB
+(add-to-list 'load-path "~/.emacs.d/lisp/")
+(autoload 'visual-basic-mode "visual-basic-mode" "Visual Basic mode." t)
+(add-to-list 'auto-mode-alist '("\\.\\(vb\\)\\'" . visual-basic-mode))
 
 
 (custom-set-variables
@@ -516,7 +584,7 @@
  '(menu-bar-mode nil)
  '(package-selected-packages
    (quote
-    (flycheck-rust alchemist elixir-mode color-theme-sanityinc-tomorrow color-theme-tomorrow clang-format aggressive-indent csharp-mode markdown-mode powershell cider fsharp-mode rainbow-delimiters company company-mode flycheck-elm flycheck use-package solarized-theme org evil)))
+    (highlight-numbers all-the-icons-dired all-the-icons flycheck-rust alchemist elixir-mode color-theme-sanityinc-tomorrow color-theme-tomorrow clang-format aggressive-indent csharp-mode markdown-mode powershell cider fsharp-mode rainbow-delimiters company company-mode flycheck-elm flycheck use-package solarized-theme org evil)))
  '(safe-local-variable-values
    (quote
     ((engine . liquid)
@@ -549,13 +617,68 @@
 
 ;; Asthetics Below Here
 
+;; Icons
+(use-package all-the-icons
+  :config
+  (setq inhibit-compacting-font-caches t))
+
+(use-package all-the-icons-dired
+  :hook (dired-mode . all-the-icons-dired-mode))
+  ;; This was found in centaur emacs, not sure what it does...
+  ;; :config
+  ;; (with-no-warnings
+  ;;   (defun my-all-the-icons-dired--display ()
+  ;;     "Display the icons of files without colors in a dired buffer."
+  ;;     (when dired-subdir-alist
+  ;;       (let ((inhibit-read-only t))
+  ;;         (save-excursion
+  ;;           ;; TRICK: Use TAB to align icons
+  ;;           (setq-local tab-width 1)
+  ;;           (goto-char (point-min))
+  ;;           (while (not (eobp))
+  ;;             (when (dired-move-to-filename nil)
+  ;;               (insert " ")
+  ;;               (let ((file (dired-get-filename 'verbatim t)))
+  ;;                 (unless (member file '("." ".."))
+  ;;                   (let ((filename (dired-get-filename nil t)))
+  ;;                     (if (file-directory-p filename)
+  ;;                         (insert (all-the-icons-icon-for-dir filename nil ""))
+  ;;                       (insert (all-the-icons-icon-for-file file :v-adjust -0.05))))
+  ;;                   ;; Align and keep one space for refeshing after some operations
+  ;;                   (insert "\t "))))
+  ;;             (forward-line 1))))))
+  ;;   (advice-add #'all-the-icons-dired--display
+  ;;               :override #'my-all-the-icons-dired--display)))
+
+
 ;; Mode line
+;; These functions define some mode line icon helpers
+(defun custom-modeline-modified ()
+  "This snippet displays an icon depending on if the file is modified.
+It shows a chain icon when the current file is saved,
+a broken chain when it is modified and a pad lock when
+the file is read only."
+    (let* ((config-alist
+             '(("*"
+                all-the-icons-faicon-family all-the-icons-faicon "chain-broken"
+                :height 1.2 :v-adjust -0.0)
+               ("-"
+                all-the-icons-faicon-family all-the-icons-faicon "link"
+                :height 1.2 :v-adjust -0.0)
+               ("%"
+                all-the-icons-octicon-family all-the-icons-octicon "lock"
+                :height 1.2 :v-adjust 0.1)))
+            (result (cdr (assoc (format-mode-line "%*") config-alist))))
+       (propertize (apply (cadr result) (cddr result))
+                   'face `(:family ,(funcall (car result))))))
+
 (use-package telephone-line
   :config
   (setq telephone-line-lhs
         '((evil   . (telephone-line-evil-tag-segment))
           (accent . (telephone-line-major-mode-segment))
           (nil    . (telephone-line-buffer-segment
+                     ;; (custom-modeline-modified)
                      telephone-line-minor-mode-segment))))
   (setq telephone-line-rhs
         '((nil    . (telephone-line-misc-info-segment))
@@ -570,10 +693,31 @@
   (setq telephone-line-height 18)
   (telephone-line-mode t))
 
-;; Material theme
-(use-package material-theme
+;; Doom themes
+(use-package doom-themes
   :config
-  (load-theme 'material))
+  ;; Global settings (defaults)
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  (load-theme 'doom-vibrant t)
+
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  
+  ;; Enable custom neotree theme (all-the-icons must be installed!)
+  ;; (doom-themes-neotree-config)
+  ;; or for treemacs users
+  ;; (setq doom-themes-treemacs-theme "doom-colors") ; use the colorful treemacs theme
+  ;; (doom-themes-treemacs-config)
+  
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
+
+
+;; Highlight Numbers
+(use-package highlight-numbers
+  :hook (prog-mode . highlight-numbers-mode))
+
 
 ;; Rainbow Delimiters
 (use-package rainbow-delimiters
@@ -582,4 +726,5 @@
 
 
 (provide '.emacs)
-;;; .emacs end here
+
+;;; .emacs ends here
