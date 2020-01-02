@@ -1,6 +1,10 @@
 # If you come from bash you might have to change your $PATH.
 export PATH=$HOME/bin:$HOME/.local/bin:$PATH
 
+# Add go to path
+export PATH=$PATH:/usr/local/go/bin
+export PATH=$PATH:$HOME/go/bin
+
 # Path to your oh-my-zsh installation.
 export ZSH=/home/ross/.oh-my-zsh
 
@@ -36,7 +40,7 @@ ZSH_THEME="ross"
 # DISABLE_AUTO_TITLE="true"
 
 # Uncomment the following line to enable command auto-correction.
-ENABLE_CORRECTION="true"
+# ENABLE_CORRECTION="true"
 
 # Uncomment the following line to display red dots whilst waiting for completion.
 # COMPLETION_WAITING_DOTS="true"
@@ -101,3 +105,10 @@ then
 fi
 
 xcape -e 'Caps_Lock=Escape;Control_L=Escape'
+
+# ROS stuff
+# source /opt/ros/melodic/setup.zsh
+
+# export PYTHONPATH=$HOME/Patroness/wheelchair_ws/src/ros_comm/utilities/message_filters/src:$PYTHONPATH
+
+export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp

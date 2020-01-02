@@ -16,8 +16,8 @@
 ;; Update package-archive lists
 (require 'package)
 (setq package-enable-at-startup nil)
-(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
-(add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+(add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/"))
 
 ;; Install 'use-package' if necessary
 (unless (package-installed-p 'use-package)
@@ -162,6 +162,9 @@
 ;; Helm incremental narrowing search framework
 (use-package helm)
 
+;; (use-package helm-gtags
+;;   :hook (dired-mode eshell-mode c-mode c++-mode asm-mode))
+
 
 ;; Key-binding help
 (use-package which-key
@@ -173,7 +176,8 @@
   :hook (after-init . global-company-mode)
   :config
   (setq company-minimum-prefix-length 1)
-  (setq company-idle-delay 0.2))
+  (setq company-tooltip-idle-delay 0)
+  (setq company-idle-delay 0))
 
 (use-package company-quickhelp
   :config
@@ -279,11 +283,18 @@
   :init
   (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode)))
 
+(use-package cc-mode
+  :config
+  (add-to-list 'c-doc-comment-style '(c++-mode . javadoc))
+  (add-to-list 'c-doc-comment-style '(c-mode . javadoc)))
+
 (use-package irony
   :hook ((c++-mode . irony-mode)
-         (c-mode-hook . irony-mode)
+         (c-mode . irony-mode)
          (objc-mode . irony-mode)
-         (irony-mode . irony-cdb-autosetup-compile-options)))
+         (irony-mode . irony-cdb-autosetup-compile-options))
+  :config
+  (global-set-key (kbd "C-c b") 'clang-format-buffer))
 
 (use-package company-irony
   :after (company)
@@ -302,6 +313,9 @@
   :hook ((flycheck-mode . flycheck-irony-setup)
          (c++-mode . (lambda () (setq flycheck-gcc-language-standard "gnu++17")))
          (c++-mode . (lambda () (setq flycheck-clang-language-standard "gnu++17")))))
+
+(use-package irony-eldoc
+  :hook (irony))
 
 (use-package clang-format
   :custom
@@ -502,6 +516,10 @@
               (define-key yaml-mode-map "\C-m" 'newline-and-indent))))
 
 
+;; TOML
+(use-package toml-mode)
+
+
 ;; Protocol Buffers
 (use-package protobuf-mode
   :hook (protobuf-mode . rainbow-delimiters-mode))
@@ -509,6 +527,8 @@
 
 ;; Golang
 (use-package go-mode
+  :init
+  (setq-default tab-width 4)
   :config
   (setq exec-path (append '("/usr/local/go/bin") exec-path))
   (setenv "PATH" (concat "/usr/local/go/bin:" (getenv "PATH")))
@@ -544,10 +564,8 @@
 (use-package systemd)
 
 
-;; VB
-(add-to-list 'load-path "~/.emacs.d/lisp/")
-(autoload 'visual-basic-mode "visual-basic-mode" "Visual Basic mode." t)
-(add-to-list 'auto-mode-alist '("\\.\\(vb\\)\\'" . visual-basic-mode))
+;; Bitbake Integration
+(use-package bitbake)
 
 
 (custom-set-variables
@@ -584,7 +602,7 @@
  '(menu-bar-mode nil)
  '(package-selected-packages
    (quote
-    (highlight-numbers all-the-icons-dired all-the-icons flycheck-rust alchemist elixir-mode color-theme-sanityinc-tomorrow color-theme-tomorrow clang-format aggressive-indent csharp-mode markdown-mode powershell cider fsharp-mode rainbow-delimiters company company-mode flycheck-elm flycheck use-package solarized-theme org evil)))
+    (gnu-elpa-keyring-update highlight-numbers all-the-icons-dired all-the-icons flycheck-rust alchemist elixir-mode color-theme-sanityinc-tomorrow color-theme-tomorrow clang-format aggressive-indent csharp-mode markdown-mode powershell cider fsharp-mode rainbow-delimiters company company-mode flycheck-elm flycheck use-package solarized-theme org evil)))
  '(safe-local-variable-values
    (quote
     ((engine . liquid)
@@ -593,6 +611,11 @@
      (web-mode-engines-alist
       ("django" . "\\.html\\'"))
      (engine . django)
+     (irony-additional-clang-options "--define=PRODUCT_MPU_V3")
+     (irony-cdb-search-directory-list "MPU V3 Debug")
+     (irony-cdb-compilation-databases irony-cdb-clang-complete)
+     (irony-cdb-search-directory "MPU V3 Debug")
+     (irony-cdb-search-directory . "MPU V3 Debug")
      (eval progn
            (add-to-list
             (quote exec-path)

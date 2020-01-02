@@ -5,7 +5,7 @@
 	email = ross.lannen@gmail.com
 [core]
 	autocrlf = input
-	excludesfile = /home/ross/.gitignore_global
+	editor = vim
 [alias]
 	s = status
 	b = branch
@@ -13,5 +13,8 @@
 	dc = diff --cached
 	co = checkout
 	l = log --pretty=format:\"-- %h %ad %s\" --date=short
+	ff = pull --ff-only
 [merge]
 	tool = emerge
+[pull]
+	rebase = true

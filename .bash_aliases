@@ -7,3 +7,5 @@ alias ll='ls -A -l -h'
 alias up='cd ../'
 
 alias update='sudo apt update && sudo apt full-upgrade -y && sudo apt autoremove -y'
+
+alias mpstat='mpstat -P ALL'
