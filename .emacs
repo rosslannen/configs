@@ -9,15 +9,15 @@
 (setq user-full-name "Ross Lannen")
 (setq user-mail-address "ross.lannen@gmail.com")
 
-(setq gnutls-algorithm-priority "NORMAL:-VERS_TLS1.3")
+(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
 (package-initialize)
 
 ;; init-use-package.el
 ;; Update package-archive lists
 (require 'package)
 (setq package-enable-at-startup nil)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
-(add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/"))
+(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
+(add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
 
 ;; Install 'use-package' if necessary
 (unless (package-installed-p 'use-package)
@@ -48,13 +48,18 @@
 
 
 ;; Line numbers
-(use-package display-line-numbers
-  :ensure nil
-  :init
-  ;; Uncomment to set relative line numbers
-  ;; (setq display-line-numbers-type 'relative)
-  :config
-  (global-display-line-numbers-mode t))
+(if (version<= "26.0.50" emacs-version )
+    (use-package display-line-numbers
+      :ensure nil
+      :init
+      ;; Uncomment to set relative line numbers
+      ;; (setq display-line-numbers-type 'relative)
+      :config
+      (global-display-line-numbers-mode t))
+  (use-package linum
+    :ensure nil
+    :config
+    (global-linum-mode t)))
 
 ;; TRAMP settings for remote hosts
 (use-package tramp
