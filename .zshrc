@@ -104,11 +104,37 @@ then
     source $HOME/anaconda3/etc/profile.d/conda.sh
 fi
 
-xcape -e 'Caps_Lock=Escape;Control_L=Escape'
-
-# ROS stuff
-# source /opt/ros/melodic/setup.zsh
-
-# export PYTHONPATH=$HOME/Patroness/wheelchair_ws/src/ros_comm/utilities/message_filters/src:$PYTHONPATH
+# keybindings
+bindkey -e
 
 export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
+
+xcape -e 'Caps_Lock=Escape;Control_L=Escape'
+
+# Rust completions
+fpath=(~/.zfunc $fpath)
+
+autoload -U compinit && compinit
+
+# Install Ruby Gems to ~/.gems
+export GEM_HOME="${HOME}/.gems"
+export PATH="${PATH}:${HOME}/.gems/bin"
+
+# NodeJS
+NPM_PACKAGES="${HOME}/.npm-packages"
+NODE_PATH="${NPM_PACKAGES}/lib/node_modules:${NODE_PATH}"
+PATH="${NPM_PACKAGES}/bin:$PATH"
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+
+# Load Angular CLI autocompletion.
+source <(ng completion script)
+
+# Raspberry Pi Pico setup
+export PICO_EXAMPLES_PATH="${HOME}/Personal/raspberry-pi/pico/pico-examples/";
+export PICO_EXTRAS_PATH="${HOME}/Personal/raspberry-pi/pico/pico-extras/";
+export PICO_PLAYGROUND_PATH="${HOME}/Personal/raspberry-pi/pico/pico-playground/";
+export PICO_SDK_PATH="${HOME}/Personal/raspberry-pi/pico/pico-sdk/";
