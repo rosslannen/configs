@@ -74,6 +74,11 @@
 
 ;; Evil mode
 (use-package undo-tree
+  :custom
+  (undo-tree-auto-save-history t "Automatically save history")
+  (undo-tree-history-directory-alist
+   '(("." . "~/.emacs.d/undo"))
+   "Save history files to .emacs.d directory")
   :init
   (global-undo-tree-mode))
 
@@ -153,7 +158,7 @@
 (use-package magit
   :bind ("C-x g" . magit-status))
 
-(use-package gitignore-mode)
+(use-package git-modes)
 
 
 ;; Python
@@ -168,10 +173,6 @@
 (use-package anaconda-mode
   :hook ((python-mode . anaconda-mode)
          (python-mode . anaconda-eldoc-mode)))
-
-(setq python-shell-interpreter "python3")
-
-(defvaralias 'flycheck-python-flake8-executable 'python-shell-interpreter)
 
 (use-package company-anaconda
   :after (company)
