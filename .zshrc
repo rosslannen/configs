@@ -66,6 +66,7 @@ plugins=(
   git
   colored-man-pages
   colorize
+  poetry
 )
 
 source $ZSH/oh-my-zsh.sh
@@ -130,11 +131,17 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 
-# Load Angular CLI autocompletion.
-source <(ng completion script)
+# This isn't working, but leave it in for a bit.
+# # Load Angular CLI autocompletion.
+# source <(ng completion script)
 
 # Raspberry Pi Pico setup
 export PICO_EXAMPLES_PATH="${HOME}/Personal/raspberry-pi/pico/pico-examples/";
 export PICO_EXTRAS_PATH="${HOME}/Personal/raspberry-pi/pico/pico-extras/";
 export PICO_PLAYGROUND_PATH="${HOME}/Personal/raspberry-pi/pico/pico-playground/";
 export PICO_SDK_PATH="${HOME}/Personal/raspberry-pi/pico/pico-sdk/";
+
+# Pyenv
+# export PYENV_ROOT="$HOME/.pyenv"
+# export PATH="$PYENV_ROOT/bin:$PATH"
+# eval "$(pyenv init -)"

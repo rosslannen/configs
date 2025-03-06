@@ -192,6 +192,9 @@
   (:map c-mode-map ("C-c b" . clang-format-buffer) :map c++-mode-map ("C-c b" . clang-format-buffer)))
 
 (use-package irony
+  :init
+  (setq irony-extra-cmake-args '("-DCMAKE_CXX_STANDARD=17"))
+  (setq irony-additional-clang-options '("-std=c++17"))
   :hook ((c++-mode . irony-mode)
 	 (c-mode-hook . irony-mode)
 	 (irony-mode . irony-cdb-autosetup-compile-options)))
@@ -211,13 +214,15 @@
 (use-package flycheck-irony
   :after (flycheck)
   :hook ((flycheck-mode . flycheck-irony-setup)
-	 (c++-mode . (lambda () (setq flycheck-gcc-language-standard "std++17")))
-	 (c++-mode . (lambda () (setq flycheck-clang-language-standard "std++17")))))
+	 (c++-mode . (lambda () (setq flycheck-gcc-language-standard "c++17")))
+	 (c++-mode . (lambda () (setq flycheck-clang-language-standard "c++17")))))
 
 (use-package clang-format
   :custom
   (clang-format-style-option "google")
   (clang-format-on-save t))
+
+;; TODO: Cmake 4 line indent.
 
 
 ;; LSP
